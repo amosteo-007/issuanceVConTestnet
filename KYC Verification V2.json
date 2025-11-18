@@ -1,0 +1,154 @@
+{
+    "$metadata": {
+        "iden3Serialization": {
+            "slotIndexA": "Full_Legal_Name",
+            "slotIndexB": "DateOfBirth",
+            "slotValueA": "Country",
+            "slotValueB": "Email"
+        },
+        "type": "KYCVerfication",
+        "uris": {
+            "jsonLdContext": "ipfs://QmVUYx1sUUnVsFUVLwGyRocJyzNgKDLDJrM9RLtrwENQ2i"
+        },
+        "version": "2.2"
+    },
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "Verification for RWA DeFi user ",
+    "title": "KYC Verification V2",
+    "properties": {
+        "@context": {
+            "type": [
+                "string",
+                "array",
+                "object"
+            ]
+        },
+        "expirationDate": {
+            "format": "date-time",
+            "type": "string"
+        },
+        "id": {
+            "type": "string"
+        },
+        "issuanceDate": {
+            "format": "date-time",
+            "type": "string"
+        },
+        "issuer": {
+            "type": [
+                "string",
+                "object"
+            ],
+            "format": "uri",
+            "properties": {
+                "id": {
+                    "format": "uri",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id"
+            ]
+        },
+        "type": {
+            "type": [
+                "string",
+                "array"
+            ],
+            "items": {
+                "type": "string"
+            }
+        },
+        "credentialSubject": {
+            "description": "Stores the data of the credential",
+            "title": "Credential subject",
+            "properties": {
+                "Full_Legal_Name": {
+                    "$comment": "Full Legal Name",
+                    "description": "A verified representation of the user’s name",
+                    "title": "Full Legal Name",
+                    "maxLength": 99,
+                    "minLength": 2,
+                    "type": "string"
+                },
+                "DateOfBirth": {
+                    "description": "The user date of birth ",
+                    "title": "Date of Birth",
+                    "format": "date",
+                    "type": "string"
+                },
+                "Country": {
+                    "$comment": "Which country citizen",
+                    "description": "Verify the user is which country citizen  ",
+                    "title": "Country",
+                    "type": "string"
+                },
+                "Email": {
+                    "description": "The email address for communication process",
+                    "title": "Email Address",
+                    "format": "email",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "Stores the DID of the subject that owns the credential",
+                    "title": "Credential subject ID",
+                    "format": "uri",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "Full_Legal_Name",
+                "DateOfBirth"
+            ],
+            "type": "object"
+        },
+        "credentialSchema": {
+            "properties": {
+                "id": {
+                    "format": "uri",
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "type"
+            ],
+            "type": "object"
+        },
+        "credentialStatus": {
+            "description": "Allows the discovery of information about the current status of the credential, such as whether it is suspended or revoked.",
+            "title": "Credential Status",
+            "properties": {
+                "id": {
+                    "description": "Id URL of the credentialStatus.",
+                    "title": "Id",
+                    "format": "uri",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Expresses the credential status type (method). The value should provide enough information to determine the current status of the credential.",
+                    "title": "Type",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "type"
+            ],
+            "type": "object"
+        }
+    },
+    "required": [
+        "@context",
+        "id",
+        "issuanceDate",
+        "issuer",
+        "type",
+        "credentialSubject",
+        "credentialSchema"
+    ],
+    "type": "object"
+}

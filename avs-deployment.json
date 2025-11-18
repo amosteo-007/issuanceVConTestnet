@@ -1,0 +1,13 @@
+{
+  "contractAddress": "0xf18489896386C853Da8fF0da0023A575d1c2319b",
+  "deployer": "0x0065eb1D661E2e7DD1F8a095dF1643c1E198e200",
+  "network": "Base Sepolia",
+  "chainId": 84532,
+  "deploymentTime": "2025-11-18T10:34:44.008Z",
+  "did3TokenAddress": "0x4e754738cb69D6f066C9A036f67EE44cC3e9aBff",
+  "minimumStake": "999999000000000000000000",
+  "minimumStakeFormatted": "999999.0 DID3",
+  "quorumPercentage": "6600",
+  "votingPeriod": "259200",
+  "stakingType": "DID3 ERC20 Token"
+}

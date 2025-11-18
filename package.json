@@ -1,0 +1,35 @@
+{
+  "name": "kyc-verifiable-credential",
+  "version": "1.0.0",
+  "description": "KYC Verification with Verifiable Credentials on Base Sepolia",
+  "main": "wallet.js",
+  "scripts": {
+    "setup": "npm install && npm run compile",
+    "deploy": "npx hardhat run deploy.js --network baseSepolia",
+    "deploy:avs": "npx hardhat run deploy-avs.js --network baseSepolia",
+    "deploy:local": "npx hardhat run deploy.js --network localhost",
+    "deploy:avs:local": "npx hardhat run deploy-avs.js --network localhost",
+    "node": "npx hardhat node",
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "clean": "npx hardhat clean"
+  },
+  "keywords": [
+    "verifiable-credentials",
+    "kyc",
+    "blockchain",
+    "base-sepolia",
+    "web3"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "chai": "^4.3.10",
+    "dotenv": "^16.3.1",
+    "ethereum-waffle": "^4.0.10",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.19.4"
+  }
+}

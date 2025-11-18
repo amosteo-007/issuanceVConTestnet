@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVS Operator Dashboard - Verifiable Credentials</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="avs-styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AVS Operator Dashboard</h1>
+            <p class="subtitle">Stake-Based Verifiable Credential Issuance & Consensus Purging</p>
+        </div>
+
+        <div class="wallet-section">
+            <button id="connectWallet" class="btn-primary">Connect Wallet</button>
+            <div id="walletInfo" class="wallet-info" style="display: none;">
+                <span id="walletAddress"></span>
+                <span id="networkStatus" class="network-badge"></span>
+            </div>
+        </div>
+
+        <!-- Operator Status -->
+        <div id="operatorStatus" class="operator-status-container">
+            <div class="operator-inactive">
+                <h3>Operator Status: Not Connected</h3>
+                <p>Connect your wallet to continue</p>
+            </div>
+        </div>
+
+        <!-- Operator Registration Section -->
+        <div class="section-card">
+            <h2>Operator Registration</h2>
+            <p>Register as an AVS operator to issue verifiable credentials. Minimum stake: 999,999 DID3 tokens</p>
+
+            <div class="form-group">
+                <label for="operatorStake">Stake Amount (DID3 Tokens) <span class="required">*</span></label>
+                <input
+                    type="number"
+                    id="operatorStake"
+                    name="operatorStake"
+                    min="999999"
+                    step="1000"
+                    placeholder="Enter stake amount (min 999,999 DID3)"
+                />
+                <span class="field-hint">Minimum 999,999 DID3 tokens required to become an operator</span>
+                <span class="field-hint">DID3 Token: 0x4e754738cb69d6f066c9a036f67ee44cc3e9abff</span>
+            </div>
+
+            <button id="registerOperator" class="btn-submit" onclick="registerAsOperator()">
+                Register as Operator
+            </button>
+
+            <div id="avsStatusMessage" class="status-message" style="display: none;"></div>
+        </div>
+
+        <!-- Operator Management Section (Only visible to registered operators) -->
+        <div class="section-card operator-only" style="display: none;">
+            <h2>Operator Management</h2>
+
+            <div class="operator-actions">
+                <div class="action-group">
+                    <h3>Add More Stake</h3>
+                    <div class="form-group">
+                        <label for="addStakeAmount">Additional Stake (DID3 Tokens)</label>
+                        <input
+                            type="number"
+                            id="addStakeAmount"
+                            name="addStakeAmount"
+                            min="1000"
+                            step="1000"
+                            placeholder="Amount to add"
+                        />
+                    </div>
+                    <button id="addStake" class="btn-secondary" onclick="addOperatorStake()">
+                        Add Stake
+                    </button>
+                </div>
+
+                <div class="action-group">
+                    <h3>Withdraw Stake</h3>
+                    <p class="warning-text">Warning: This will deactivate you as an operator</p>
+                    <button id="withdrawStake" class="btn-danger" onclick="withdrawOperatorStake()">
+                        Withdraw Stake
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Credential Issuance Section (Only visible to operators) -->
+        <div class="section-card operator-only" style="display: none;">
+            <h2>Issue Verifiable Credential</h2>
+            <p>As an operator with >= 999,999 DID3 tokens stake, you can issue KYC credentials</p>
+
+            <form id="kycForm" onsubmit="issueAVSCredential(event)">
+                <div class="form-group">
+                    <label for="avsSubjectAddress">
+                        Subject Address <span class="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="avsSubjectAddress"
+                        name="avsSubjectAddress"
+                        required
+                        placeholder="0x..."
+                    />
+                    <span class="field-hint">Ethereum address of the credential recipient</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="avsFullName">
+                        Full Legal Name <span class="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="avsFullName"
+                        name="avsFullName"
+                        required
+                        minlength="2"
+                        maxlength="99"
+                        placeholder="Enter full legal name"
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="avsDateOfBirth">
+                        Date of Birth <span class="required">*</span>
+                    </label>
+                    <input
+                        type="date"
+                        id="avsDateOfBirth"
+                        name="avsDateOfBirth"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="avsCountry">Country of Citizenship</label>
+                    <select id="avsCountry" name="avsCountry">
+                        <option value="">Select country</option>
+                        <option value="United States">United States</option>
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="Canada">Canada</option>
+                        <option value="Australia">Australia</option>
+                        <option value="Germany">Germany</option>
+                        <option value="France">France</option>
+                        <option value="Japan">Japan</option>
+                        <option value="Singapore">Singapore</option>
+                        <option value="Switzerland">Switzerland</option>
+                        <option value="Netherlands">Netherlands</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="avsEmail">Email Address</label>
+                    <input
+                        type="email"
+                        id="avsEmail"
+                        name="avsEmail"
+                        placeholder="email@example.com"
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="avsExpirationDate">Credential Expiration Date</label>
+                    <input
+                        type="date"
+                        id="avsExpirationDate"
+                        name="avsExpirationDate"
+                    />
+                    <span class="field-hint">Leave empty for no expiration</span>
+                </div>
+
+                <button type="submit" class="btn-submit" id="avsSubmitBtn">
+                    Issue Verifiable Credential
+                </button>
+            </form>
+
+            <div id="avsCredentialResult" class="credential-result" style="display: none;">
+                <h3>Credential Issued Successfully!</h3>
+                <div class="result-details">
+                    <p><strong>Transaction Hash:</strong> <span id="avsTxHash"></span></p>
+                    <p><strong>Credential Hash:</strong> <span id="avsCredHash"></span></p>
+                    <p><strong>Subject Address:</strong> <span id="avsSubjectAddr"></span></p>
+                    <a id="avsExplorerLink" href="#" target="_blank" class="explorer-link">View on Block Explorer</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Purge Proposal Section (Only visible to operators) -->
+        <div class="section-card operator-only" style="display: none;">
+            <h2>Propose Credential Purge</h2>
+            <p>Propose to purge expired or revoked credentials (only issuers can propose)</p>
+
+            <div class="form-group">
+                <label for="purgeCredentialHash">
+                    Credential Hash <span class="required">*</span>
+                </label>
+                <input
+                    type="text"
+                    id="purgeCredentialHash"
+                    name="purgeCredentialHash"
+                    placeholder="0x..."
+                    maxlength="66"
+                />
+                <span class="field-hint">The hash of the credential you issued</span>
+            </div>
+
+            <div class="form-group">
+                <label for="purgeReason">
+                    Purge Reason <span class="required">*</span>
+                </label>
+                <select id="purgeReason" name="purgeReason">
+                    <option value="expired">Expired</option>
+                    <option value="revoked">Revoked</option>
+                </select>
+            </div>
+
+            <button id="proposePurge" class="btn-secondary" onclick="proposePurgeCredential()">
+                Propose Purge
+            </button>
+        </div>
+
+        <!-- Active Purge Proposals Section -->
+        <div class="section-card operator-only" style="display: none;">
+            <h2>Active Purge Proposals</h2>
+            <p>Vote on purge proposals to reach 66% quorum</p>
+
+            <button class="btn-secondary" onclick="loadPurgeProposals()">
+                Refresh Proposals
+            </button>
+
+            <div id="purgeProposalsList" class="proposals-list">
+                <p>No proposals loaded</p>
+            </div>
+        </div>
+
+        <!-- Network Info -->
+        <div class="registry-info">
+            <h3>AVS Registry Contract</h3>
+            <p id="RegistryAddress">Not deployed yet</p>
+            <button id="deployRegistry" class="btn-secondary" onclick="deployRegistry()">
+                Deploy AVS Registry Contract
+            </button>
+
+            <div class="network-stats" id="networkStats" style="display: none;">
+                <h4>Network Statistics</h4>
+                <p><strong>Total Stake:</strong> <span id="totalStake">0</span> DID3</p>
+                <p><strong>Quorum Requirement:</strong> <span id="quorumReq">0</span> DID3 (66%)</p>
+                <p><strong>Active Operators:</strong> <span id="activeOpsCount">0</span></p>
+                <p><strong>Minimum Stake:</strong> 999,999 DID3 tokens</p>
+                <p><strong>DID3 Token:</strong> 0x4e754738cb69d6f066c9a036f67ee44cc3e9abff</p>
+                <p><strong>Voting Period:</strong> 3 days</p>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation-links">
+            <a href="index.html" class="nav-link">← Back to Standard Registry</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="wallet.js"></script>
+    <script src="avs-wallet.js"></script>
+    <script>
+        // Initialize AVS when wallet connects
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Override the original initializeApp to include AVS initialization
+            const originalInit = window.initializeApp;
+            window.initializeApp = async function() {
+                await originalInit();
+
+                // Set AVS contract address if deployed
+                const avsAddress = localStorage.getItem('RegistryAddress');
+                if (avsAddress) {
+                    avsContractAddress = avsAddress;
+                    document.getElementById('RegistryAddress').textContent = avsAddress;
+                    await initializeAVS();
+                    await loadNetworkStats();
+                }
+
+                // Set minimum date for expiration
+                const expirationInput = document.getElementById('avsExpirationDate');
+                if (expirationInput) {
+                    const today = new Date().toISOString().split('T')[0];
+                    expirationInput.min = today;
+                }
+            };
+        });
+
+        // Load network statistics
+        async function loadNetworkStats() {
+            if (!avsRegistryContract) return;
+
+            try {
+                const totalStakeWei = await avsRegistryContract.totalStake();
+                const quorumReqWei = await avsRegistryContract.getQuorumRequirement();
+                const activeOps = await avsRegistryContract.getActiveOperatorCount();
+
+                document.getElementById('totalStake').textContent = ethers.utils.formatEther(totalStakeWei);
+                document.getElementById('quorumReq').textContent = ethers.utils.formatEther(quorumReqWei);
+                document.getElementById('activeOpsCount').textContent = activeOps.toString();
+
+                document.getElementById('networkStats').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading network stats:', error);
+            }
+        }
+
+        // Set AVS contract address manually
+        function setAVSContractAddress() {
+            const address = prompt('Enter AVS Registry contract address:');
+            if (address && ethers.utils.isAddress(address)) {
+                avsContractAddress = address;
+                localStorage.setItem('RegistryAddress', address);
+                document.getElementById('RegistryAddress').textContent = address;
+                location.reload();
+            } else if (address) {
+                alert('Invalid address');
+            }
+        }
+
+        // Deploy Registry - allows manual input of contract address
+        async function deployRegistry() {
+            const deployBtn = document.getElementById('deployRegistry');
+
+            // Check if contract is already deployed
+            const existingAddress = localStorage.getItem('RegistryAddress');
+            if (existingAddress) {
+                const useExisting = confirm(`AVS Registry already deployed at ${existingAddress}.\n\nDo you want to use a different contract address?`);
+                if (!useExisting) {
+                    return;
+                }
+            }
+
+            const address = prompt('Enter AVS Registry contract address:');
+            if (address && ethers.utils.isAddress(address)) {
+                avsContractAddress = address;
+                localStorage.setItem('RegistryAddress', address);
+
+                const registryAddressEl = document.getElementById('RegistryAddress');
+                if (registryAddressEl) {
+                    registryAddressEl.textContent = address;
+                }
+
+                if (deployBtn) {
+                    deployBtn.textContent = 'Contract Already Deployed';
+                    deployBtn.disabled = true;
+                }
+
+                // Initialize AVS with new contract
+                if (typeof initializeAVS === 'function') {
+                    await initializeAVS();
+                }
+
+                // Load network stats
+                if (typeof loadNetworkStats === 'function') {
+                    await loadNetworkStats();
+                }
+
+                alert('AVS Registry contract address set successfully!');
+            } else if (address) {
+                alert('Invalid address. Please enter a valid Ethereum address.');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Wallet Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #0052FF;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0041CC;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #f0f0f0;
+        }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e9; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <h1>Wallet Connection Test</h1>
+    <button onclick="testConnection()">Test Wallet Connection</button>
+    <div id="status" class="status"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script>
+        function log(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML += `<p>${message}</p>`;
+            statusDiv.className = 'status ' + (isError ? 'error' : 'success');
+            console.log(message);
+        }
+
+        async function testConnection() {
+            document.getElementById('status').innerHTML = '';
+
+            try {
+                // Check if ethers is loaded
+                if (typeof ethers === 'undefined') {
+                    log('ERROR: Ethers.js library not loaded!', true);
+                    return;
+                }
+                log('✓ Ethers.js loaded successfully');
+
+                // Check if MetaMask is installed
+                if (typeof window.ethereum === 'undefined') {
+                    log('ERROR: MetaMask not found!', true);
+                    return;
+                }
+                log('✓ MetaMask detected');
+
+                // Request account access
+                log('Requesting account access...');
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+                log(`✓ Connected! Address: ${accounts[0]}`);
+
+                // Initialize provider
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                log('✓ Provider initialized');
+
+                // Get network
+                const network = await provider.getNetwork();
+                log(`✓ Network: ${network.name} (Chain ID: ${network.chainId})`);
+
+                // Get balance
+                const balance = await provider.getBalance(accounts[0]);
+                log(`✓ Balance: ${ethers.utils.formatEther(balance)} ETH`);
+
+                // Check Base Sepolia
+                const BASE_SEPOLIA_CHAIN_ID = 84532;
+                if (network.chainId === BASE_SEPOLIA_CHAIN_ID) {
+                    log('✓ You are on Base Sepolia!');
+                } else {
+                    log(`⚠ Wrong network! Please switch to Base Sepolia (Chain ID: ${BASE_SEPOLIA_CHAIN_ID})`, true);
+                }
+
+            } catch (error) {
+                log(`ERROR: ${error.message}`, true);
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

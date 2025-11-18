@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test VC Registry Contract</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #0052FF;
+        }
+        button {
+            background: #0052FF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0041CC; }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f4f8;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>VC Registry Contract Tester</h1>
+
+        <div class="test-section">
+            <h3>1. Connect Wallet</h3>
+            <button onclick="connectWallet()">Connect Wallet</button>
+            <div id="walletResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Set Contract Address</h3>
+            <input type="text" id="contractAddress" placeholder="Enter VCRegistry contract address">
+            <button onclick="setContract()">Set Contract</button>
+            <div id="contractResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Check Authorization</h3>
+            <button onclick="checkAuthorization()">Check If Authorized Issuer</button>
+            <div id="authResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Issue Test Credential</h3>
+            <input type="text" id="testName" placeholder="Full Name" value="John Doe">
+            <input type="date" id="testDOB" value="1990-01-01">
+            <button onclick="issueTestCredential()">Issue Test Credential</button>
+            <div id="issueResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Get My Credentials</h3>
+            <button onclick="getMyCredentials()">Get My Credentials</button>
+            <div id="credentialsResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>6. Check Credential Validity</h3>
+            <input type="text" id="credHashCheck" placeholder="Credential Hash">
+            <button onclick="checkValidity()">Check Validity</button>
+            <div id="validityResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script>
+        let provider, signer, userAddress, contract;
+
+        const ABI = [
+            "function issueCredential(address _subject, string _credentialType, bytes _credentialData, uint256 _expirationDate) returns (bytes32)",
+            "function getCredential(bytes32 _credentialHash) view returns (address subject, address issuer, uint256 issuanceDate, uint256 expirationDate, bool isRevoked, string credentialType)",
+            "function isCredentialValid(bytes32 _credentialHash) view returns (bool)",
+            "function getSubjectCredentials(address _subject) view returns (bytes32[])",
+            "function isAuthorizedIssuer(address _issuer) view returns (bool)",
+            "event CredentialIssued(bytes32 indexed credentialHash, address indexed subject, address indexed issuer, string credentialType, uint256 issuanceDate, uint256 expirationDate)"
+        ];
+
+        async function connectWallet() {
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                userAddress = accounts[0];
+
+                const network = await provider.getNetwork();
+
+                showResult('walletResult',
+                    `✅ Connected!\nAddress: ${userAddress}\nNetwork: ${network.name} (Chain ID: ${network.chainId})`,
+                    'success');
+            } catch (error) {
+                showResult('walletResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function setContract() {
+            const address = document.getElementById('contractAddress').value;
+            if (!address) {
+                showResult('contractResult', '❌ Please enter a contract address', 'error');
+                return;
+            }
+
+            if (!signer) {
+                showResult('contractResult', '❌ Please connect wallet first', 'error');
+                return;
+            }
+
+            try {
+                contract = new ethers.Contract(address, ABI, signer);
+                showResult('contractResult', `✅ Contract set!\nAddress: ${address}`, 'success');
+            } catch (error) {
+                showResult('contractResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkAuthorization() {
+            if (!contract || !userAddress) {
+                showResult('authResult', '❌ Please connect wallet and set contract first', 'error');
+                return;
+            }
+
+            try {
+                const isAuthorized = await contract.isAuthorizedIssuer(userAddress);
+                showResult('authResult',
+                    `${isAuthorized ? '✅' : '❌'} ${userAddress}\nis ${isAuthorized ? '' : 'NOT '}an authorized issuer`,
+                    isAuthorized ? 'success' : 'error');
+            } catch (error) {
+                showResult('authResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function issueTestCredential() {
+            if (!contract || !userAddress) {
+                showResult('issueResult', '❌ Please connect wallet and set contract first', 'error');
+                return;
+            }
+
+            const name = document.getElementById('testName').value;
+            const dob = document.getElementById('testDOB').value;
+
+            try {
+                const credData = {
+                    Full_Legal_Name: name,
+                    DateOfBirth: dob,
+                    Country: "Test Country",
+                    Email: "test@example.com"
+                };
+
+                const credJSON = JSON.stringify(credData);
+                const credBytes = ethers.utils.toUtf8Bytes(credJSON);
+
+                showResult('issueResult', '⏳ Sending transaction...', '');
+
+                const tx = await contract.issueCredential(
+                    userAddress,
+                    'KYCVerification',
+                    credBytes,
+                    0
+                );
+
+                showResult('issueResult', `⏳ Waiting for confirmation...\nTx: ${tx.hash}`, '');
+
+                const receipt = await tx.wait();
+                const event = receipt.events?.find(e => e.event === 'CredentialIssued');
+                const credHash = event?.args?.credentialHash;
+
+                showResult('issueResult',
+                    `✅ Credential Issued!\nHash: ${credHash}\nTx: ${tx.hash}`,
+                    'success');
+            } catch (error) {
+                showResult('issueResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function getMyCredentials() {
+            if (!contract || !userAddress) {
+                showResult('credentialsResult', '❌ Please connect wallet and set contract first', 'error');
+                return;
+            }
+
+            try {
+                const creds = await contract.getSubjectCredentials(userAddress);
+
+                let result = `Found ${creds.length} credential(s):\n\n`;
+                for (let i = 0; i < creds.length; i++) {
+                    result += `${i + 1}. ${creds[i]}\n`;
+                }
+
+                showResult('credentialsResult', result, creds.length > 0 ? 'success' : '');
+            } catch (error) {
+                showResult('credentialsResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkValidity() {
+            if (!contract) {
+                showResult('validityResult', '❌ Please set contract first', 'error');
+                return;
+            }
+
+            const hash = document.getElementById('credHashCheck').value;
+            if (!hash) {
+                showResult('validityResult', '❌ Please enter a credential hash', 'error');
+                return;
+            }
+
+            try {
+                const isValid = await contract.isCredentialValid(hash);
+                showResult('validityResult',
+                    `${isValid ? '✅' : '❌'} Credential is ${isValid ? 'VALID' : 'INVALID'}`,
+                    isValid ? 'success' : 'error');
+            } catch (error) {
+                showResult('validityResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function showResult(elementId, message, className) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'result ' + className;
+            element.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

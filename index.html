@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Verification - Issue Verifiable Credential</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>KYC Verification</h1>
+            <p class="subtitle">Issue Verifiable Credential on Base Sepolia</p>
+        </div>
+
+        <div class="wallet-section">
+            <button id="connectWallet" class="btn-primary">Connect Wallet</button>
+            <div id="walletInfo" class="wallet-info" style="display: none;">
+                <span id="walletAddress"></span>
+                <span id="networkStatus" class="network-badge"></span>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <form id="kycForm">
+                <div class="form-group">
+                    <label for="fullName">
+                        Full Legal Name <span class="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="fullName"
+                        name="fullName"
+                        required
+                        minlength="2"
+                        maxlength="99"
+                        placeholder="Enter your full legal name"
+                    />
+                    <span class="field-hint">As it appears on official documents</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="dateOfBirth">
+                        Date of Birth <span class="required">*</span>
+                    </label>
+                    <input
+                        type="date"
+                        id="dateOfBirth"
+                        name="dateOfBirth"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="country">
+                        Country of Citizenship
+                    </label>
+                    <select id="country" name="country">
+                        <option value="">Select your country</option>
+                        <option value="United States">United States</option>
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="Canada">Canada</option>
+                        <option value="Australia">Australia</option>
+                        <option value="Germany">Germany</option>
+                        <option value="France">France</option>
+                        <option value="Japan">Japan</option>
+                        <option value="Singapore">Singapore</option>
+                        <option value="Switzerland">Switzerland</option>
+                        <option value="Netherlands">Netherlands</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">
+                        Email Address
+                    </label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="your.email@example.com"
+                    />
+                    <span class="field-hint">For verification communication</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="expirationDate">
+                        Credential Expiration Date
+                    </label>
+                    <input
+                        type="date"
+                        id="expirationDate"
+                        name="expirationDate"
+                    />
+                    <span class="field-hint">Leave empty for no expiration</span>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        Issue Verifiable Credential
+                    </button>
+                </div>
+            </form>
+
+            <div id="statusMessage" class="status-message" style="display: none;"></div>
+
+            <div id="credentialResult" class="credential-result" style="display: none;">
+                <h3>Credential Issued Successfully!</h3>
+                <div class="result-details">
+                    <p><strong>Transaction Hash:</strong> <span id="txHash"></span></p>
+                    <p><strong>Credential Hash:</strong> <span id="credHash"></span></p>
+                    <p><strong>Subject Address:</strong> <span id="subjectAddr"></span></p>
+                    <a id="explorerLink" href="#" target="_blank" class="explorer-link">View on Block Explorer</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="registry-info">
+            <h3>VC Registry Contract</h3>
+            <p id="registryAddress">Not deployed yet</p>
+            <button id="deployRegistry" class="btn-secondary">Deploy Registry Contract</button>
+        </div>
+
+        <div class="navigation-section">
+            <h3>Advanced Features</h3>
+            <p>Looking for stake-based consensus credential management?</p>
+            <a href="avs-dashboard.html" class="avs-link">
+                <strong>AVS Operator Dashboard →</strong>
+                <span>Stake-based issuance & 66% quorum purging</span>
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="wallet.js"></script>
+</body>
+</html>

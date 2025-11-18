@@ -1,0 +1,41 @@
+# Environment variables (contains private keys!)
+.env
+.env.example
+
+# Node modules
+node_modules/
+
+# Hardhat files
+cache/
+artifacts/
+
+# Build files
+dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Deployment artifacts
+deployments/
+.openzeppelin/
+
+# Coverage reports
+coverage/
+coverage.json
+
+# Temporary files
+*.tmp
+.cache/
