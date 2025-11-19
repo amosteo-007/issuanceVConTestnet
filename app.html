@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifiable Credentials on Base Sepolia</title>
+    <link rel="stylesheet" href="app-styles.css">
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>🔐 VC Registry</h1>
+                <p class="subtitle">Verifiable Credentials on Base Sepolia</p>
+            </div>
+            <div class="wallet-section">
+                <div id="networkInfo" class="network-info"></div>
+                <button id="connectWallet" class="btn-primary">Connect Wallet</button>
+                <div id="walletAddress" class="wallet-address"></div>
+            </div>
+        </header>
+
+        <!-- Role Selector -->
+        <div class="role-selector">
+            <button class="role-btn active" data-role="issuer">
+                <span class="role-icon">👤</span>
+                <span class="role-name">Issuer / Operator</span>
+            </button>
+            <button class="role-btn" data-role="user">
+                <span class="role-icon">👥</span>
+                <span class="role-name">User</span>
+            </button>
+            <button class="role-btn" data-role="defi">
+                <span class="role-icon">🏦</span>
+                <span class="role-name">DeFi Protocol</span>
+            </button>
+        </div>
+
+        <!-- Issuer / Operator View -->
+        <div id="issuerView" class="view active">
+            <!-- Staking Section -->
+            <section class="card">
+                <h2>📊 Issuer Staking</h2>
+                <p class="card-description">Stake DID3 tokens to become an authorized issuer. Minimum stake: 999,999 DID3</p>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Your Stake</div>
+                        <div class="stat-value" id="issuerStake">0</div>
+                        <div class="stat-unit">DID3</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value" id="issuerStatus">Not Registered</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Credentials Issued</div>
+                        <div class="stat-value" id="credentialsIssued">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Credentials Revoked</div>
+                        <div class="stat-value" id="credentialsRevoked">0</div>
+                    </div>
+                </div>
+
+                <div class="action-group">
+                    <div class="input-group">
+                        <label for="stakeAmount">Stake Amount (DID3)</label>
+                        <input type="number" id="stakeAmount" placeholder="999999" min="999999">
+                    </div>
+                    <div class="button-group">
+                        <button id="approveTokens" class="btn-secondary">1. Approve Tokens</button>
+                        <button id="registerIssuer" class="btn-primary">2. Register as Issuer</button>
+                        <button id="addStake" class="btn-secondary">Add More Stake</button>
+                        <button id="withdrawStake" class="btn-warning">Withdraw Stake</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Issue Credential Section -->
+            <section class="card">
+                <h2>📝 Issue Credential</h2>
+                <p class="card-description">Issue KYC verifiable credentials to users</p>
+
+                <form id="issueCredentialForm">
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="subjectAddress">Subject Address *</label>
+                            <input type="text" id="subjectAddress" placeholder="0x..." required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="credentialType">Credential Type *</label>
+                            <select id="credentialType" required>
+                                <option value="">Select Type</option>
+                                <option value="KYCVerification">KYC Verification</option>
+                                <option value="AgeProof">Age Proof</option>
+                                <option value="ResidencyProof">Residency Proof</option>
+                                <option value="AccreditedInvestor">Accredited Investor</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="fullName">Full Legal Name *</label>
+                            <input type="text" id="fullName" placeholder="John Doe" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="dateOfBirth">Date of Birth *</label>
+                            <input type="date" id="dateOfBirth" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="country">Country of Citizenship</label>
+                            <input type="text" id="country" placeholder="United States">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" placeholder="john@example.com">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="expirationDate">Expiration Date</label>
+                        <input type="date" id="expirationDate">
+                        <small>Leave empty for no expiration</small>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-large">Issue Credential</button>
+                </form>
+            </section>
+
+            <!-- Manage Credentials Section -->
+            <section class="card">
+                <h2>🗂️ Manage Your Issued Credentials</h2>
+                <p class="card-description">View, revoke, and purge credentials you've issued</p>
+
+                <button id="loadIssuerCredentials" class="btn-secondary">Load My Credentials</button>
+
+                <div id="issuerCredentialsList" class="credentials-list"></div>
+            </section>
+        </div>
+
+        <!-- User View -->
+        <div id="userView" class="view">
+            <section class="card">
+                <h2>🎫 My Credentials</h2>
+                <p class="card-description">View all credentials issued to your address</p>
+
+                <button id="loadUserCredentials" class="btn-primary">Load My Credentials</button>
+
+                <div id="userCredentialsList" class="credentials-list"></div>
+            </section>
+
+            <section class="card">
+                <h2>🔍 Verify Credential</h2>
+                <p class="card-description">Check if a credential is valid</p>
+
+                <div class="input-group">
+                    <label for="verifyCredentialHash">Credential Hash</label>
+                    <input type="text" id="verifyCredentialHash" placeholder="0x...">
+                </div>
+
+                <button id="verifyCredential" class="btn-primary">Verify</button>
+
+                <div id="verificationResult" class="verification-result"></div>
+            </section>
+        </div>
+
+        <!-- DeFi Protocol View -->
+        <div id="defiView" class="view">
+            <section class="card">
+                <h2>🏦 DeFi Protocol Integration</h2>
+                <p class="card-description">Verify user credentials for KYC compliance</p>
+
+                <div class="info-box info">
+                    <strong>📋 Integration Coming Soon</strong>
+                    <p>This section will allow DeFi protocols to verify user KYC status for regulatory compliance.</p>
+                    <p>Supported use cases:</p>
+                    <ul>
+                        <li>Lending/Borrowing platforms (Aave, Compound)</li>
+                        <li>Regulated DEX platforms</li>
+                        <li>Tokenized securities</li>
+                        <li>Derivatives and options platforms</li>
+                    </ul>
+                </div>
+
+                <div class="input-group">
+                    <label for="defiUserAddress">User Address to Verify</label>
+                    <input type="text" id="defiUserAddress" placeholder="0x...">
+                </div>
+
+                <button id="verifyUserKYC" class="btn-primary">Check KYC Status</button>
+
+                <div id="defiVerificationResult" class="verification-result"></div>
+            </section>
+
+            <section class="card">
+                <h2>📚 Integration Documentation</h2>
+                <p class="card-description">For DeFi protocol developers</p>
+
+                <div class="info-box">
+                    <h3>Smart Contract Integration</h3>
+                    <pre><code>// Example integration
+interface IVCRegistry {
+    function isCredentialValid(bytes32 credentialHash) external view returns (bool);
+    function getValidSubjectCredentials(address subject) external view returns (bytes32[] memory);
+}
+
+contract YourDeFiProtocol {
+    IVCRegistry public vcRegistry;
+
+    function requireKYC(address user) internal view {
+        bytes32[] memory creds = vcRegistry.getValidSubjectCredentials(user);
+        require(creds.length > 0, "User must have valid KYC");
+    }
+}</code></pre>
+                </div>
+            </section>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" class="status-message"></div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>📄 Contract Addresses</h4>
+                    <p id="avsAddress">AVSManagement: Not deployed</p>
+                    <p id="vcRegistryAddress">VCRegistry: Not deployed</p>
+                </div>
+                <div class="footer-section">
+                    <h4>🔗 Network</h4>
+                    <p>Base Sepolia Testnet</p>
+                    <p>Chain ID: 84532</p>
+                </div>
+                <div class="footer-section">
+                    <h4>🪙 DID3 Token</h4>
+                    <p>0x4e754738cb69D6f066C9A036f67EE44cC3e9aBff</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
