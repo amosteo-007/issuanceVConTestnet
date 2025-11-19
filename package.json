@@ -7,12 +7,18 @@
     "setup": "npm install && npm run compile",
     "deploy": "npx hardhat run deploy.js --network baseSepolia",
     "deploy:avs": "npx hardhat run deploy-avs.js --network baseSepolia",
+    "deploy:refactored": "npx hardhat run deploy-refactored.js --network baseSepolia",
     "deploy:local": "npx hardhat run deploy.js --network localhost",
     "deploy:avs:local": "npx hardhat run deploy-avs.js --network localhost",
+    "deploy:refactored:local": "npx hardhat run deploy-refactored.js --network localhost",
     "node": "npx hardhat node",
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
-    "clean": "npx hardhat clean"
+    "test:avs": "npx hardhat test test/AVSManagement.test.js",
+    "test:vc": "npx hardhat test test/VCRegistry.test.js",
+    "verify": "npx hardhat run verify-contracts.js --network baseSepolia",
+    "clean": "npx hardhat clean",
+    "serve": "npx serve ."
   },
   "keywords": [
     "verifiable-credentials",
@@ -24,12 +30,18 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.2.3",
-    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@typechain/ethers-v6": "^0.5.0",
+    "@typechain/hardhat": "^9.0.0",
     "chai": "^4.3.10",
-    "dotenv": "^16.3.1",
-    "ethereum-waffle": "^4.0.10",
-    "ethers": "^5.7.2",
-    "hardhat": "^2.19.4"
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.0",
+    "hardhat": "^2.22.0",
+    "hardhat-gas-reporter": "^1.0.10",
+    "solidity-coverage": "^0.8.0",
+    "typechain": "^8.3.0"
   }
 }
