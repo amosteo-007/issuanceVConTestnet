@@ -7,12 +7,18 @@
     "setup": "npm install && npm run compile",
     "deploy": "npx hardhat run deploy.js --network baseSepolia",
     "deploy:avs": "npx hardhat run deploy-avs.js --network baseSepolia",
+    "deploy:refactored": "npx hardhat run deploy-refactored.js --network baseSepolia",
     "deploy:local": "npx hardhat run deploy.js --network localhost",
     "deploy:avs:local": "npx hardhat run deploy-avs.js --network localhost",
+    "deploy:refactored:local": "npx hardhat run deploy-refactored.js --network localhost",
     "node": "npx hardhat node",
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
-    "clean": "npx hardhat clean"
+    "test:avs": "npx hardhat test test/AVSManagement.test.js",
+    "test:vc": "npx hardhat test test/VCRegistry.test.js",
+    "verify": "npx hardhat run verify-contracts.js --network baseSepolia",
+    "clean": "npx hardhat clean",
+    "serve": "npx serve ."
   },
   "keywords": [
     "verifiable-credentials",
